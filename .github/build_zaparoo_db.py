@@ -229,7 +229,25 @@ def publish_outputs() -> None:
             shutil.copy2(tmp_path / output, output)
         subprocess.run(["git", "add", "-f", "db.json.zip", "downloader_ZaparooProject_Zaparoo_MiSTer.ini", "downloader_ZaparooProject_Zaparoo_MiSTer.zip"], check=True)
         subprocess.run(["git", "commit", "-m", "Build Zaparoo MiSTer database"], check=True)
-        subprocess.run(["git", "push", "--force", "origin", "db"], check=True)
+        run_with_retries(["git", "push", "--force", "origin", "db"], attempts=3, delay_seconds=15)
+
+
+def run_with_retries(command: list[str], attempts: int, delay_seconds: int) -> None:
+    last_error: subprocess.CalledProcessError | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            subprocess.run(command, check=True)
+            return
+        except subprocess.CalledProcessError as error:
+            last_error = error
+            if attempt == attempts:
+                break
+            print(f"Command failed on attempt {attempt}/{attempts}: {' '.join(command)}")
+            print(f"Retrying in {delay_seconds} seconds...")
+            time.sleep(delay_seconds)
+
+    assert last_error is not None
+    raise last_error
 
 
 if __name__ == "__main__":
