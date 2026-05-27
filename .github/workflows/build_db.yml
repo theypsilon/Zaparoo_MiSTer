@@ -1,19 +1,36 @@
-name: Build Custom Database
+name: Build Zaparoo MiSTer Database
 
 on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "17 * * * *"
   workflow_dispatch:
+    inputs:
+      core_tag:
+        description: "zaparoo-core release tag, or latest"
+        required: false
+        default: "latest"
+      frontend_tag:
+        description: "zaparoo-frontend release tag, or latest"
+        required: false
+        default: "latest"
 
-permissions: write-all
+permissions:
+  contents: write
 
 jobs:
   build_db:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Build Custom Database for MiSTer Downloader
-      run: set -o pipefail && curl --fail --location https://raw.githubusercontent.com/theypsilon/Downloader_DB-Template_MiSTer/main/.github/build_db.py | python3 -
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build and publish database
+        run: python3 .github/build_zaparoo_db.py --core-tag "$CORE_TAG" --frontend-tag "$FRONTEND_TAG"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CORE_TAG: ${{ github.event.inputs.core_tag || 'latest' }}
+          FRONTEND_TAG: ${{ github.event.inputs.frontend_tag || 'latest' }}
