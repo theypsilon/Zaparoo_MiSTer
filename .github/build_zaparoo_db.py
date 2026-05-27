@@ -227,7 +227,7 @@ def publish_outputs() -> None:
         subprocess.run(["git", "reset"], check=True)
         for output in ["db.json.zip", "downloader_ZaparooProject_Zaparoo_MiSTer.ini", "downloader_ZaparooProject_Zaparoo_MiSTer.zip"]:
             shutil.copy2(tmp_path / output, output)
-        subprocess.run(["git", "add", "db.json.zip", "downloader_ZaparooProject_Zaparoo_MiSTer.ini", "downloader_ZaparooProject_Zaparoo_MiSTer.zip"], check=True)
+        subprocess.run(["git", "add", "-f", "db.json.zip", "downloader_ZaparooProject_Zaparoo_MiSTer.ini", "downloader_ZaparooProject_Zaparoo_MiSTer.zip"], check=True)
         subprocess.run(["git", "commit", "-m", "Build Zaparoo MiSTer database"], check=True)
         subprocess.run(["git", "push", "--force", "origin", "db"], check=True)
 
