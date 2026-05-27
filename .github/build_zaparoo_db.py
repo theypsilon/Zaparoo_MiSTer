@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import os
 import re
@@ -19,6 +20,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
 import urllib.request
 import zipfile
 from dataclasses import dataclass
@@ -76,7 +78,12 @@ def main() -> int:
         download(frontend_asset.url, frontend_zip)
 
         db = build_db(core_asset, core_zip, frontend_asset, frontend_zip)
-        write_outputs(db)
+
+    if not args.no_push and not needs_publish(db):
+        print("No database changes detected; skipping validation and publish.")
+        return 0
+
+    write_outputs(db)
 
     if not args.skip_test:
         run_downloader_test()
@@ -114,6 +121,62 @@ def download(url: str, path: Path) -> None:
     request = urllib.request.Request(url, headers={"User-Agent": "Zaparoo_MiSTer DB builder"})
     with urllib.request.urlopen(request, timeout=300) as response, path.open("wb") as out:
         shutil.copyfileobj(response, out)
+
+
+def needs_publish(db: dict[str, Any]) -> bool:
+    current_db = read_current_published_db()
+    if current_db is None:
+        print("No published database found; publishing new database.")
+        return True
+
+    if reformat_db_for_comparison(db) == reformat_db_for_comparison(current_db):
+        return False
+
+    print("Database changes detected; publishing new database.")
+    return True
+
+
+def read_current_published_db() -> dict[str, Any] | None:
+    request = urllib.request.Request(DB_URL, headers={"User-Agent": "Zaparoo_MiSTer DB builder"})
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            data = response.read()
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            return None
+        raise
+
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        return json.loads(archive.read("db.json"))
+
+
+def reformat_db_for_comparison(db: dict[str, Any]) -> dict[str, Any]:
+    result = json.loads(json.dumps(db))
+    result.pop("timestamp", None)
+    normalize_archives(result)
+    return result
+
+
+def normalize_archives(db: dict[str, Any]) -> None:
+    archives = db.get("archives", {})
+    for archive in archives.values():
+        if "archive_file" in archive and "contents_file" not in archive:
+            archive["contents_file"] = archive.pop("archive_file")
+        if "summary_inline" in archive and "internal_summary" not in archive:
+            archive["internal_summary"] = archive.pop("summary_inline")
+        if archive.get("extract") == "selective":
+            archive["kind"] = "extract_single_files"
+            del archive["extract"]
+
+        summary = archive.get("internal_summary", {})
+        for file_desc in summary.get("files", {}).values():
+            if "arc_id" in file_desc and "zip_id" not in file_desc:
+                file_desc["zip_id"] = file_desc.pop("arc_id")
+            if "arc_at" in file_desc and "zip_path" not in file_desc:
+                file_desc["zip_path"] = file_desc.pop("arc_at")
+        for folder_desc in summary.get("folders", {}).values():
+            if "arc_id" in folder_desc and "zip_id" not in folder_desc:
+                folder_desc["zip_id"] = folder_desc.pop("arc_id")
 
 
 def build_db(core_asset: ReleaseAsset, core_zip: Path, frontend_asset: ReleaseAsset, frontend_zip: Path) -> dict[str, Any]:

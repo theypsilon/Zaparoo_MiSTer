@@ -1,15 +1,15 @@
 # Zaparoo MiSTer Database
 
-Official Zaparoo database for the MiSTer Downloader and Update All.
+MiSTer Downloader / Update All database for Zaparoo.
 
-This database installs the MiSTer Zaparoo stack:
+It installs:
 
 - `Scripts/zaparoo.sh` — Zaparoo Core for MiSTer
 - `zaparoo/frontend` — Zaparoo Frontend
 - `zaparoo/MiSTer_Zaparoo` — frontend dependency
 - `zaparoo/menu_zaparoo.rbf` — frontend dependency
 
-## Install manually
+## Manual install
 
 Add this to `/media/fat/downloader.ini`:
 
@@ -20,25 +20,25 @@ db_url = https://raw.githubusercontent.com/ZaparooProject/Zaparoo_MiSTer/db/db.j
 
 Then run `downloader` or `update_all`.
 
-A drop-in config is also published at:
+There is also a drop-in config ZIP:
 
 ```text
 https://raw.githubusercontent.com/ZaparooProject/Zaparoo_MiSTer/db/downloader_ZaparooProject_Zaparoo_MiSTer.zip
 ```
 
-## How it works
+## Binaries
 
-The repository does **not** store Zaparoo binaries.
+This repo does not mirror Zaparoo binaries.
 
-The GitHub Actions workflow builds a Downloader database that points at the official GitHub release ZIPs from:
+The workflow builds a Downloader database that points to the official release ZIPs from:
 
 - `ZaparooProject/zaparoo-core`
 - `ZaparooProject/zaparoo-frontend`
 
-Downloader extracts only the required MiSTer files from those release ZIPs.
+Downloader extracts the MiSTer files it needs from those ZIPs.
 
 ## Maintainer notes
 
-The database is rebuilt on every push to `main` and can also be run manually from GitHub Actions.
+The database rebuilds on pushes to `main`, on a schedule, and when run manually from GitHub Actions.
 
-By default it uses the latest release from both `zaparoo-core` and `zaparoo-frontend`. Manual workflow dispatch supports overriding either release tag.
+Manual runs can target specific `zaparoo-core` or `zaparoo-frontend` release tags. Otherwise the workflow uses the latest release from each repo.
