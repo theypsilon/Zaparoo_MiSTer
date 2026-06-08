@@ -233,6 +233,8 @@ def build_summary(archive_id: str, zip_path: Path, install_map: dict[str, str], 
                 "hash": hashlib.md5(data).hexdigest(),
                 "size": len(data),
                 "reboot": True,
+                "backup": f"{install_path}.bak",
+                "tmp": f"{install_path}.tmp",
                 "arc_id": archive_id,
                 "arc_at": archive_path,
             }
