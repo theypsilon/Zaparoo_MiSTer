@@ -27,8 +27,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-DB_ID = os.environ["GITHUB_REPOSITORY"]
-print(f"DB_ID: {DB_ID}")
+DB_ID = os.getenv("GITHUB_REPOSITORY", "ZaparooProject/Zaparoo_MiSTer")
 DB_URL = "https://raw.githubusercontent.com/ZaparooProject/Zaparoo_MiSTer/db/db.json.zip"
 CORE_REPO = "ZaparooProject/zaparoo-core"
 FRONTEND_REPO = "ZaparooProject/zaparoo-frontend"
@@ -61,6 +60,8 @@ class FileInfo:
 
 
 def main() -> int:
+    print(f"DB_ID: {DB_ID}")
+
     parser = argparse.ArgumentParser(description="Build Zaparoo MiSTer Downloader DB")
     parser.add_argument("--no-push", action="store_true", help="build locally without pushing the db branch")
     parser.add_argument("--skip-test", action="store_true", help="skip downloader_test.py validation")
