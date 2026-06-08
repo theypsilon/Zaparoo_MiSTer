@@ -27,7 +27,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-DB_ID = "ZaparooProject/Zaparoo_MiSTer"
+DB_ID = os.environ["GITHUB_REPOSITORY"]
+print(f"DB_ID: {DB_ID}")
 DB_URL = "https://raw.githubusercontent.com/ZaparooProject/Zaparoo_MiSTer/db/db.json.zip"
 CORE_REPO = "ZaparooProject/zaparoo-core"
 FRONTEND_REPO = "ZaparooProject/zaparoo-frontend"
